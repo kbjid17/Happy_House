@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.mycom.happyhouse.dao.NoticeDao">
+
+	<insert id="noticeInsert" parameterType="com.mycom.happyhouse.dto.NoticeDto" useGeneratedKeys="true" keyProperty="noticeSeq">
+		INSERT INTO notice ( notice_USERSEQ, notice_TITLE, notice_CONTENT, notice_REGDT, notice_READCOUNT )
+		            VALUES ( #{userSeq}, #{noticeTitle}, #{noticeContent}, now(), 0 )
+	</insert>
+	
+	<insert id="noticeFileInsert" parameterType="com.mycom.happyhouse.dto.NoticeFileDto">
+		INSERT INTO notice_file ( notice_seq, FILE_NAME, FILE_SIZE, FILE_CONTENT_TYPE, FILE_URL )
+		            VALUES ( #{noticeSeq}, #{fileName}, #{fileSize}, #{fileContentType}, #{fileUrl} )
+	</insert>
+	
+	<!-- reg_dt : LocalDateTime, check out BoardDto setter  -->
+	<select id="noticeList" parameterType="map" resultType="com.mycom.happyhouse.dto.NoticeDto">
+		SELECT b.notice_seq, b.notice_userseq "userSeq", u.USER_NAME, u.USER_PROFILE_IMAGE_URL,
+		  	   b.notice_title, b.notice_content, b.notice_REGDT, b.notice_READCOUNT
+		  FROM notice b, USER u
+		 WHERE b.notice_userseq = u.USER_SEQ
+		 ORDER BY b.notice_seq DESC
+		 LIMIT #{limit} OFFSET #{offset}
+	</select>
+	
+	<select id="noticeListTotalCount" resultType="int">
+		SELECT COUNT(*) FROM notice
+	</select>
+	
+	<select id="noticeListSearchWord" parameterType="map" resultType="com.mycom.happyhouse.dto.NoticeDto">
+		SELECT b.notice_seq, b.notice_userseq "userSeq", u.USER_NAME, u.USER_PROFILE_IMAGE_URL,
+		  	   b.notice_TITLE, b.notice_CONTENT, b.notice_REGDT, b.notice_READCOUNT
+		  FROM notice b, USER u
+		  WHERE b.notice_USERSEQ = u.USER_SEQ
+		    AND b.notice_title LIKE CONCAT('%', #{searchWord} ,'%')
+		  ORDER BY b.notice_seq DESC
+		  LIMIT #{limit} OFFSET #{offset}
+	</select>
+	
+	<select id="noticeListSearchWordTotalCount" parameterType="string" resultType="int">
+		SELECT COUNT(*)
+		  FROM notice
+		 WHERE notice_TITLE LIKE CONCAT('%', #{searchWord} ,'%')
+	</select>
+	
+	<update id="noticeUpdate" parameterType="com.mycom.happyhouse.dto.NoticeDto">
+		UPDATE notice
+		   SET notice_TITLE = #{noticeTitle},
+		   notice_CONTENT   = #{noticeContent}
+		 WHERE notice_seq = #{noticeSeq}
+	</update>
+	
+	<delete id="noticeDelete" parameterType="int">
+		DELETE FROM notice WHERE notice_seq = #{noticeSeq}
+	</delete>
+	
+	<delete id="noticeFileDelete" parameterType="int">
+		DELETE FROM notice_file WHERE notice_seq = #{noticeSeq}
+	</delete>
+	
+	<select id="noticeFileUrlDeleteList" parameterType="int" resultType="string">
+		SELECT FILE_URL FROM notice_file WHERE notice_seq = #{noticeSeq}
+	</select>
+
+	<select id="noticeDetail" parameterType="int" resultType="com.mycom.happyhouse.dto.NoticeDto">
+		SELECT b.notice_seq, b.notice_userseq "userSeq", u.USER_NAME, u.USER_PROFILE_IMAGE_URL,
+			   b.notice_title, b.notice_content, b.notice_regdt, b.notice_readcount
+		  FROM notice b, USER u
+		 WHERE b.notice_seq = #{noticeSeq}
+		   AND b.notice_userseq = u.USER_SEQ
+	</select>
+	
+	<select id="noticeDetailFileList" parameterType="int" resultType="com.mycom.happyhouse.dto.NoticeFileDto">
+		SELECT notice_seq, FILE_ID, FILE_NAME, FILE_SIZE, FILE_CONTENT_TYPE, 
+		       FILE_URL, REG_DT
+		  FROM notice_file
+		 WHERE notice_seq = #{noticeSeq}
+	</select>
+	
+	<!-- Dao use Dto -->
+	<select id="noticeUserReadCount" parameterType="map" resultType="int">
+		SELECT count(*) FROM notice_user_read WHERE notice_seq = #{noticeSeq} and user_seq = #{userSeq}
+	</select>
+	
+	<!-- Dao use @param -->
+	<insert id="noticeUserReadInsert" parameterType="map">
+		INSERT INTO notice_user_read ( notice_seq, user_seq )
+		            VALUES ( #{noticeSeq}, #{userSeq} )
+	</insert>
+	
+	<update id="noticeReadCountUpdate" parameterType="int">
+		UPDATE notice set notice_readcount = notice_readcount + 1
+		 WHERE notice_seq = #{noticeSeq}
+	</update>
+	
+	<update id="noticeReadCountDelete" parameterType="int">
+		DELETE FROM notice_user_read WHERE notice_seq = #{noticeSeq}
+	</update>
+	
+</mapper>

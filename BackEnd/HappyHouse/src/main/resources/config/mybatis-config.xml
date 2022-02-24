@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"	"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+	<settings>
+        <setting name="callSettersOnNulls" value="true"/> <!-- DB의 값이 Null이더라도 해당 Setter의 값을 호출해라 -->
+        <setting name="mapUnderscoreToCamelCase" value="true"/> <!-- snake표기법과 맞지 않는 것을 맞춰주는 역할 -->
+	</settings>
+
+	<mappers>
+		<mapper resource="mapper/user_query.xml" />
+		<mapper resource="mapper/board_query.xml" />
+		<mapper resource="mapper/notice_query.xml" />
+		<mapper resource="mapper/code_query.xml" />
+		<mapper resource="mapper/house_query.xml" />
+		<mapper resource="mapper/address_query.xml" />
+		<mapper resource="mapper/commerce_query.xml" />
+		<mapper resource="mapper/Interest_query.xml" />
+	</mappers>
+	
+</configuration>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.mycom.happyhouse.dao.AddressDao">
+
+	<select id="sidoList" resultType="com.mycom.happyhouse.dto.AddressDto">
+		select code as sido_code, name as sido_name
+		from sido_code;
+	</select>
+	
+	<select id="gugunList" parameterType="string" resultType="com.mycom.happyhouse.dto.AddressDto">
+		select code as gugun_code, name as gugun_name
+		from gugun_code
+		where sido_code = #{code};
+	</select>
+	
+	<select id="dongList" parameterType="string" resultType="com.mycom.happyhouse.dto.AddressDto">
+		select code as dong_code, name as dong_name, city_code as sido_code, city_name as sido_name, gugun_code, gugun_name
+		from dong_code
+		where gugun_code = #{code};
+	</select>
+	
+	<select id="dongLatLng" parameterType="string" resultType="com.mycom.happyhouse.dto.AddressDto">
+		select dong as dongName, lat, lng
+		from baseaddress
+		where dong = #{searchWord};
+	</select>
+	
+</mapper>

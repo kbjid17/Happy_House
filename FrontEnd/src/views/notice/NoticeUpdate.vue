@@ -1,0 +1,99 @@
+<template>
+  <div class="row container-fluid my-5">
+              <div class="card-style mb-30">
+                  <h6 class="mb-25">공지사항 내용 수정</h6>
+                  <div class="input-style-1">
+                    <label>제목</label>
+                    <textarea v-model="notice.title" placeholder="Message" rows="1"></textarea>
+                  </div>
+                  <!-- end textarea -->
+                  <div class="input-style-1">
+                    <label>내용</label>
+                    <textarea v-model="notice.content" placeholder="Message" rows="8"></textarea>
+                    <button @click="update(notice.noticeSeq)" class="btn btn-sm btn-warning">수정</button>
+                    <button @click="Back" class="btn btn-sm btn-secondary mx-2">취소</button>
+                  </div>
+                  <!-- end textarea -->
+              </div>
+  </div>
+</template>
+
+<script>
+import http from "@/common/axios.js";
+  // import util from "@/common/util.js";
+
+  // import Pagination from "@/views/Pagination.vue";
+  // 삭제
+  import Vue from 'vue';
+  import VueAlertify from 'vue-alertify'; 
+import { mapState } from 'vuex';
+  Vue.use(VueAlertify);
+
+const userStore = "userStore";
+const noticeStore = "noticeStore";
+export default {
+  name: 'noticeUpload',
+  // components : {Pagination},
+  data() {
+    return {
+      title: '',
+      content : '',
+      attachFile: false,
+      fileList: [],
+    }
+  },
+  computed : {
+    ...mapState(userStore,["login"]),
+    ...mapState(noticeStore,["notice"]),
+  },
+  methods: {
+    changeFile(fileEvent) {
+        if( fileEvent.target.files && fileEvent.target.files.length > 0 ){
+
+          for( var i=0; i<fileEvent.target.files.length; i++ ){
+            const file = fileEvent.target.files[i];
+            this.fileList.push(URL.createObjectURL(file));
+          }
+        }
+      },
+    Back() {
+      this.$router.push("/notices")
+    },
+    update(noticeSeq) {
+      console.log(this.notice.title);
+      console.log(this.notice.content);
+      
+      var formData = new FormData();
+      console.log(formData);
+      formData.append("noticeTitle",this.notice.title);
+      formData.append("noticeContent",this.notice.content);
+      console.log(formData);
+      var attachFiles = document.querySelector("#inputFileUploadInsert");
+      console.log(attachFiles);
+      // var cnt = attachFiles.files
+
+      http.post(
+        '/notices/' + noticeSeq,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } })
+      .then(({data}) => {
+        console.log(data);
+        if(this.login.isLogin) {
+          this.$router.push("/notices");
+         }
+          else {
+            this.$router.push("/login");
+          }
+        })
+        .catch((error) => {
+          console.log("DetailModalVue: error ");
+            console.log(error);
+        })
+    }
+  }
+}
+</script>
+
+<style>
+
+</style>

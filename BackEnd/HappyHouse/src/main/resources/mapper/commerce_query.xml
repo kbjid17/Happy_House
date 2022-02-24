@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.mycom.happyhouse.dao.CommerceDao">
+	
+	<select id="commerceSearchDong" parameterType="map" resultType="com.mycom.happyhouse.dto.CommerceDto" >
+		select 상가업소번호 as num, 상호명 as titleName, 지점명 as locationName, 상권업종대분류명 as branch, 
+			   표준산업분류명 as branchDetail, 법정동명 as dong, 지번주소 as address, 경도 as lng, 위도 as lat, 평점 as rating
+		from commerce
+		where 법정동명 like concat('%', #{searchWord} ,'%');
+	</select>
+	
+	<select id="commerceSearchDongTotalCount" parameterType="map">
+		select count(*)
+		from commerce
+		where 법정동명 like concat('%', #{searchWord} ,'%');
+	</select>
+	
+	<select id="commerceSearchLatLng" parameterType="map" resultType="com.mycom.happyhouse.dto.CommerceDto" >
+		select 상가업소번호 as num, 상호명 as titleName, 지점명 as locationName, 상권업종대분류명 as branch, 
+			   표준산업분류명 as branchDetail, 법정동명 as dong, 지번주소 as address, 경도 as lng, 위도 as lat, 평점 as rating
+		from commerce
+		where 경도 between #{startLng} and #{endLng}
+		and 위도 between #{startLat} and #{endLat};
+	</select>
+	
+	<select id="commerceSearchLatLngTotalCount" parameterType="map" resultType="int">
+		select count(*)
+		from commerce
+		where 경도 between #{startLng} and #{endLng}
+		and 위도 between #{startLat} and #{endLat};
+	</select>
+</mapper>

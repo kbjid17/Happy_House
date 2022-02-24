@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.mycom.happyhouse.dao.HouseDao">
+	
+	<select id="houseList" parameterType="map" resultType="com.mycom.happyhouse.dto.HouseDto">
+		select h.no, b.city, b.gugun, h.dong, h.AptName, h.code, h.buildyear, h.jibun, h.lat, h.lng, h.img, h.status, round(h.rating, 1) as rating
+		from houseinfo h join baseaddress b
+		on h.dong = b.dong
+		limit #{limit} offset #{offset}
+	</select>
+	
+	<select id="houseListTotalCount" resultType="int">
+		select count(*) from houseinfo h join baseaddress b
+		on h.dong = b.dong
+	</select>
+	
+	<select id="houseListSearchHouseNo" parameterType="map" resultType="com.mycom.happyhouse.dto.HouseDto">
+		select no, dong, AptName, code, buildyear, jibun, lat, lng, img, status, round(rating, 1) as rating
+		from houseinfo
+		where no in
+		  <foreach item="no" index="index" collection="noList"
+		      open="(" separator="," close=")">
+		        #{no}
+		  </foreach>
+	</select>
+	
+	<select id="houseListSearchDong" parameterType="map" resultType="com.mycom.happyhouse.dto.HouseDto">
+		select h.no, b.city, b.gugun, h.dong, h.AptName, h.code, h.buildyear, h.jibun, h.lat, h.lng, h.img, h.status, round(h.rating, 1) as rating, d.dealAmount, d.area
+		from houseinfo h join baseaddress b on h.dong = b.dong
+		join (
+			select house_no, floor(avg(replace(dealAmount,',',''))) as dealAmount, round(avg(area), 2) as area
+			from housedeal
+			group by house_no
+		) as d
+		on h.no = d.house_no
+		where h.code = #{gugunCode} and h.dong = #{searchWord}
+		order by ${orderColumn} ${order};
+	</select>
+	
+	<select id="houseListSearchDongTotalCount" parameterType="map" resultType="int">
+		select count(*) 
+		from houseinfo h join baseaddress b
+		on h.dong = b.dong
+		where h.code = #{gugunCode} and h.dong = #{searchWord};
+	</select>
+	
+	<select id="houseListSearchWord" parameterType="map" resultType="com.mycom.happyhouse.dto.HouseDto">
+		select h.no, b.city, b.gugun, h.dong, h.AptName, h.code, h.buildyear, h.jibun, h.lat, h.lng, h.img, h.status, round(h.rating, 1) as rating, d.dealAmount, d.area
+		from houseinfo h 
+		join baseaddress b
+		on h.dong = b.dong
+		join (
+			select house_no, floor(avg(replace(dealAmount,',',''))) as dealAmount, round(avg(area), 2) as area
+			from housedeal
+			group by house_no
+		) as d
+		on h.no = d.house_no
+		where b.city like concat('%', #{searchWord} ,'%') 
+		   or b.gugun like concat('%', #{searchWord} ,'%')  
+		   or h.AptName like concat('%', #{searchWord} ,'%') 
+		   or h.dong like concat('%', #{searchWord} ,'%') 
+		order by h.no asc;
+	</select>
+	
+	<select id="houseListSearchWordTotalCount" parameterType="map" resultType="int">
+		select count(*) 
+		from houseinfo h join baseaddress b
+		on h.dong = b.dong
+		where b.city like concat('%', #{searchWord} ,'%')  
+		  or b.gugun like concat('%', #{searchWord} ,'%') 
+		  or h.AptName like concat('%', #{searchWord} ,'%') 
+		  or h.dong like concat('%', #{searchWord} ,'%') 
+	</select>
+	
+	<select id="houseDealDetail" parameterType="int" resultType="com.mycom.happyhouse.dto.HouseDealDto">
+		select AptName, dealYear, dealMonth, dealDay, dealAmount, area, floor
+		from housedeal
+		where house_no = #{no}
+	</select>
+	
+	<select id="houseListRand" parameterType="map" resultType="com.mycom.happyhouse.dto.HouseDto">
+		select h.no, b.city, b.gugun, h.dong, h.AptName, h.code, h.buildyear, h.jibun, h.lat, h.lng, h.img, h.status, round(h.rating, 1) as rating, d.dealAmount, d.area
+		from houseinfo h 
+		join baseaddress b
+		on h.dong = b.dong
+		join (
+			select house_no, floor(avg(replace(dealAmount,',',''))) as dealAmount, round(avg(area), 2) as area
+			from housedeal
+			group by house_no
+		) as d
+		on h.no = d.house_no
+		where rating > #{searchWord}
+		and status in ("판매중", "취소됨")
+		order by rand() limit #{limit};
+	</select>
+	
+	<select id="houseListSearchStatus" parameterType="map" resultType="com.mycom.happyhouse.dto.HouseDto">
+		select h.no, b.city, b.gugun, h.dong, h.AptName, h.code, h.buildyear, h.jibun, h.lat, h.lng, h.img, h.status, round(h.rating, 1) as rating, d.dealAmount, d.area
+		from houseinfo h join baseaddress b on h.dong = b.dong
+		join (
+			select house_no, floor(avg(replace(dealAmount,',',''))) as dealAmount, round(avg(area), 2) as area
+			from housedeal
+			group by house_no
+		) as d
+		on h.no = d.house_no
+		where h.code = #{gugunCode} and h.dong = #{searchWord} and h.status = #{status};
+	</select>
+	
+	<select id="houseListSearchStatusTotalCount" parameterType="map" resultType="int">
+		select count(*) 
+		from houseinfo h join baseaddress b
+		on h.dong = b.dong
+		where h.code = #{gugunCode} and h.dong = #{searchWord} and h.status = #{status}
+	</select>
+	
+	<select id="houseDealRecentList" parameterType="map" resultType="com.mycom.happyhouse.dto.HouseDealDto">
+		select c.AptName, c.dealYear, c.dealMonth, c.dealDay, c.dealAmount, c.area, c.floor 
+		from housedeal c, (
+			SELECT 
+				IFNULL(LAG(a.no) OVER (ORDER BY a.no), '') AS "a"
+				, IFNULL(LAG(b.no) OVER (ORDER BY a.no), '') AS "b"
+			FROM housedeal a, 
+			(
+				select max(no) as no
+				FROM housedeal
+				where house_no = #{no}
+				ORDER BY no
+			) as b
+			where house_no = #{no}
+			ORDER BY a.no desc
+			limit 1
+		) as d
+		where c.no = d.a
+		or c.no = d.b;
+	</select>
+	
+</mapper>
